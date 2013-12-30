@@ -57,20 +57,24 @@ namespace WindowsFormsApplication2
 
                 
             ///////////////////// copy info from registry ////////////////////
-            string reg64 = "HKEY_LOCAL_MACHINE" + "\\" + "SOFTWARE" + "\\" + "Wow6432Node" + "\\" + "Brainware";
-            string reg32 = "HKEY_LOCAL_MACHINE" + "\\" + "SOFTWARE" + "\\" + "Brainware";
+            Task copyInfoFromReg = Task.Run(()=>
+                {
+                       string reg64 = "HKEY_LOCAL_MACHINE" + "\\" + "SOFTWARE" + "\\" + "Wow6432Node" + "\\" + "Brainware";
+                       string reg32 = "HKEY_LOCAL_MACHINE" + "\\" + "SOFTWARE" + "\\" + "Brainware";
 
-            if (Environment.Is64BitOperatingSystem == true)
-            {
-                Process.Start("regedit.exe", "/e" + " " + @"c:\Send_To_Support\Generic\Registry_Export.reg" + " " + reg64);
+                            if (Environment.Is64BitOperatingSystem == true)
+                            {
+                                Process.Start("regedit.exe", "/e" + " " + @"c:\Send_To_Support\Generic\Registry_Export.reg" + " " + reg64);
 
 
-            }
-            else
-            {
-                Process.Start("regedit.exe", "/e" + " " + @"c:\Send_To_Support\Generic\Registry_Export.reg" + " " + reg32);
-
-            }
+                            }
+                            else
+                            {
+                                Process.Start("regedit.exe", "/e" + " " + @"c:\Send_To_Support\Generic\Registry_Export.reg" + " " + reg32);
+                            }
+                }
+                );
+         
 
             
             

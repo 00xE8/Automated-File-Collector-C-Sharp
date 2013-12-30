@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Windows.Forms;
-using System.IO;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
+using System;
 using System.Diagnostics;
-using System.Management;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 
 
@@ -55,139 +47,141 @@ namespace WindowsFormsApplication2
         private void button1_Click(object sender, EventArgs e)
         {
 
-                
+
             ///////////////////// copy info from registry ////////////////////
-            Task copyInfoFromReg = Task.Run(()=>
+            Task copyInfoFromReg = Task.Run(() =>
                 {
-                       string reg64 = "HKEY_LOCAL_MACHINE" + "\\" + "SOFTWARE" + "\\" + "Wow6432Node" + "\\" + "Brainware";
-                       string reg32 = "HKEY_LOCAL_MACHINE" + "\\" + "SOFTWARE" + "\\" + "Brainware";
+                    string reg64 = "HKEY_LOCAL_MACHINE" + "\\" + "SOFTWARE" + "\\" + "Wow6432Node" + "\\" + "Brainware";
+                    string reg32 = "HKEY_LOCAL_MACHINE" + "\\" + "SOFTWARE" + "\\" + "Brainware";
 
-                            if (Environment.Is64BitOperatingSystem == true)
-                            {
-                                Process.Start("regedit.exe", "/e" + " " + @"c:\Send_To_Support\Generic\Registry_Export.reg" + " " + reg64);
+                    if (Environment.Is64BitOperatingSystem == true)
+                    {
+                        Process.Start("regedit.exe", "/e" + " " + @"c:\Send_To_Support\Generic\Registry_Export.reg" + " " + reg64);
 
 
-                            }
-                            else
-                            {
-                                Process.Start("regedit.exe", "/e" + " " + @"c:\Send_To_Support\Generic\Registry_Export.reg" + " " + reg32);
-                            }
+                    }
+                    else
+                    {
+                        Process.Start("regedit.exe", "/e" + " " + @"c:\Send_To_Support\Generic\Registry_Export.reg" + " " + reg32);
+                    }
                 }
                 );
-         
 
-            
-            
-            
+
+
+
+
             ///////////////////create os file information//////////////////////
             Task createOsFileInfo = Task.Run(() =>
             {
                 string command = "/C systeminfo > c:" + "\\" + "Send_to_support" + "\\" + "Generic" + "\\" + "OSInfo.txt";
-            Process.Start("CMD.exe", command);
+                Process.Start("CMD.exe", command);
 
-            
+
                 RegistryKey installFolderK = Registry.LocalMachine;
                 installFolderK = installFolderK.OpenSubKey(@"SOFTWARE\", true);
                 string componentInfo = "ComponentInfo.txt";
                 StreamWriter createFile = File.CreateText(sendToSupportGeneric + "\\" + componentInfo);
                 createFile.Close();
             });
-            
-           
-            Task getCompInfo = Task.Run(() => 
+
+
+            Task getCompInfo1 = Task.Run(() =>
                 {
                     /////////////////////////////
                     RegistryKey installFolderK = Registry.LocalMachine;
-                installFolderK = installFolderK.OpenSubKey(@"SOFTWARE\", true);
-                string componentInfo = "ComponentInfo.txt";
-                StreamWriter createFile = File.CreateText(sendToSupportGeneric + "\\" + componentInfo);
-                createFile.Close();
-                {
-
-
-                    foreach (var subkeynamelist in installFolderK.GetSubKeyNames())
+                    installFolderK = installFolderK.OpenSubKey(@"SOFTWARE\", true);
+                    string componentInfo = "ComponentInfo.txt";
+                    StreamWriter createFile = File.CreateText(sendToSupportGeneric + "\\" + componentInfo);
+                    createFile.Close();
                     {
-                        try
+
+
+                        foreach (var subkeynamelist in installFolderK.GetSubKeyNames())
                         {
-                            using (RegistryKey key = installFolderK.OpenSubKey(subkeynamelist))
+                            try
                             {
-                                
-                                foreach (var subkeynamelist2 in key.GetSubKeyNames())
+                                using (RegistryKey key = installFolderK.OpenSubKey(subkeynamelist))
                                 {
-                                    try
+
+                                    foreach (var subkeynamelist2 in key.GetSubKeyNames())
                                     {
-                                        using (RegistryKey key2 = key.OpenSubKey(subkeynamelist2))
+                                        try
                                         {
-
-                                            foreach (var subkeyvalue in key2.GetValueNames())
+                                            using (RegistryKey key2 = key.OpenSubKey(subkeynamelist2))
                                             {
-                                                
-                                                string installPathCRO = key2.GetValue(subkeyvalue).ToString();
-                                                
-                                                                                        
 
-
-                                                if (subkeyvalue == "CRO")
+                                                foreach (var subkeyvalue in key2.GetValueNames())
                                                 {
-                                                    string componentsFolder = System.IO.Directory.GetParent(installPathCRO.ToString()).ToString();
-                                                    string mainFolder = System.IO.Directory.GetParent(componentsFolder).ToString();//Brainware folder
-                                                    //MessageBox.Show(mainFolder);
 
-                                                    foreach (var firstLevelMainFolder in Directory.GetDirectories(mainFolder))
+                                                    string installPathCRO = key2.GetValue(subkeyvalue).ToString();
+
+
+
+
+                                                    if (subkeyvalue == "CRO")
                                                     {
-                                                        
-                                                        foreach (var secondLevelMainFolder in Directory.GetDirectories(firstLevelMainFolder))
+                                                        string componentsFolder = System.IO.Directory.GetParent(installPathCRO.ToString()).ToString();
+                                                        string mainFolder = System.IO.Directory.GetParent(componentsFolder).ToString();//Brainware folder
+                                                        //MessageBox.Show(mainFolder);
+
+                                                        foreach (var firstLevelMainFolder in Directory.GetDirectories(mainFolder))
                                                         {
-                                                            foreach (var secondLevelMainFolderFiles in Directory.GetFiles(secondLevelMainFolder))
+
+                                                            foreach (var secondLevelMainFolder in Directory.GetDirectories(firstLevelMainFolder))
                                                             {
-                                                                //string[] files = Directory.GetFiles(secondLevelMainFolderFiles.ToString());
-                                                                //MessageBox.Show(secondLevelMainFolderFiles.EndsWith("Brainware.System.Project.exe.config"));
-                                                                if (secondLevelMainFolderFiles.EndsWith("Brainware.System.Project.exe.config"))
+                                                                foreach (var secondLevelMainFolderFiles in Directory.GetFiles(secondLevelMainFolder))
                                                                 {
-                                                                    //MessageBox.Show(secondLevelMainFolderFiles);
-                                                                    string fileName = Path.GetFileName(secondLevelMainFolderFiles);
-                                                                    string destPath = Path.Combine(sendToSupportGeneric, fileName);
-                                                                    File.Copy(secondLevelMainFolderFiles, destPath, true);
+                                                                    //string[] files = Directory.GetFiles(secondLevelMainFolderFiles.ToString());
+                                                                    //MessageBox.Show(secondLevelMainFolderFiles.EndsWith("Brainware.System.Project.exe.config"));
+                                                                    if (secondLevelMainFolderFiles.EndsWith("Brainware.System.Project.exe.config"))
+                                                                    {
+                                                                        //MessageBox.Show(secondLevelMainFolderFiles);
+                                                                        string fileName = Path.GetFileName(secondLevelMainFolderFiles);
+                                                                        string destPath = Path.Combine(sendToSupportGeneric, fileName);
+                                                                        File.Copy(secondLevelMainFolderFiles, destPath, true);
+                                                                    }
+
                                                                 }
 
+
                                                             }
-                                                            
-                                                            
+
                                                         }
-                                                    
+
+
                                                     }
 
-                                                                                                                                
+
                                                 }
 
-
                                             }
-
+                                        }
+                                        catch (System.Security.SecurityException)
+                                        {
                                         }
                                     }
-                                    catch (System.Security.SecurityException)
-                                    {
-                                    }
+
                                 }
-
                             }
-                        }
-                        catch (System.Security.SecurityException)
-                        {
-                        }
+                            catch (System.Security.SecurityException)
+                            {
+                            }
 
+                        }
                     }
-                }               
-            }
-
-
+                });
+            Task getCompInfo2 = Task.Run(() =>
+                {
+                    RegistryKey installFolderK = Registry.LocalMachine;
+                    installFolderK = installFolderK.OpenSubKey(@"SOFTWARE\", true);
                     foreach (var subkeynamelist in installFolderK.GetSubKeyNames())
                     {
                         try
                         {
                             using (RegistryKey key = installFolderK.OpenSubKey(subkeynamelist))
                             {
-                                
+
                                 foreach (var subkeynamelist2 in key.GetSubKeyNames())
                                 {
                                     try
@@ -213,7 +207,7 @@ namespace WindowsFormsApplication2
 
                                                         foreach (string filename in Directory.EnumerateFiles(windowslocation64, "WWB9_32W.dll"))
                                                         {
-                                                            
+
                                                             FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(filename);
                                                             FileStream fs = new FileStream(@"c:\Send_to_support\Generic\ComponentInfo.txt", FileMode.Append, FileAccess.Write);
                                                             StreamWriter InjectIntoFile = new StreamWriter(fs);
@@ -229,7 +223,7 @@ namespace WindowsFormsApplication2
                                                     {
                                                         foreach (string filename in Directory.EnumerateFiles(windowslocation32, "WWB9_32W.dll"))
                                                         {
-                                                            
+
                                                             FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(filename);
                                                             FileStream fs = new FileStream(@"c:\Send_to_support\Generic\ComponentInfo.txt", FileMode.Append, FileAccess.Write);
                                                             StreamWriter InjectIntoFile = new StreamWriter(fs);
@@ -237,7 +231,7 @@ namespace WindowsFormsApplication2
                                                             InjectIntoFile.Close();
 
                                                         }
-                                                    
+
                                                     }
 
 
@@ -280,14 +274,12 @@ namespace WindowsFormsApplication2
 
                     }
                 }
+                
+               );
             DialogResultYesNo newDiagRes = new DialogResultYesNo();
             newDiagRes.diagRes(pictureBox5);
-
         }
-                   
-                    /////////////////////////////
-                }
-                );
+                    
                 //////////////////////Get component information///////////////////////   
             
                 

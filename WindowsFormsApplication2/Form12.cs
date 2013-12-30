@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using System.IO;
 using Microsoft.Win32;
@@ -75,32 +76,36 @@ namespace WindowsFormsApplication2
             
             
             ///////////////////create os file information//////////////////////
-            string command = "/C systeminfo > c:" + "\\" + "Send_to_support" + "\\" + "Generic" + "\\" + "OSInfo.txt";
+            Task createOsFileInfo = Task.Run(() =>
+            {
+                string command = "/C systeminfo > c:" + "\\" + "Send_to_support" + "\\" + "Generic" + "\\" + "OSInfo.txt";
             Process.Start("CMD.exe", command);
 
             
-                RegistryKey installFolderKey = Registry.LocalMachine;
-                installFolderKey = installFolderKey.OpenSubKey(@"SOFTWARE\", true);
+                RegistryKey installFolderK = Registry.LocalMachine;
+                installFolderK = installFolderK.OpenSubKey(@"SOFTWARE\", true);
                 string componentInfo = "ComponentInfo.txt";
                 StreamWriter createFile = File.CreateText(sendToSupportGeneric + "\\" + componentInfo);
                 createFile.Close();
+            });
+            
            
-
-                //////////////////////Get component information///////////////////////   
-            {
-                RegistryKey installFolderKey = Registry.LocalMachine;
-                installFolderKey = installFolderKey.OpenSubKey(@"SOFTWARE\", true);
+            Task getCompInfo = Task.Run(() => 
+                {
+                    /////////////////////////////
+                    RegistryKey installFolderK = Registry.LocalMachine;
+                installFolderK = installFolderK.OpenSubKey(@"SOFTWARE\", true);
                 string componentInfo = "ComponentInfo.txt";
                 StreamWriter createFile = File.CreateText(sendToSupportGeneric + "\\" + componentInfo);
                 createFile.Close();
                 {
 
 
-                    foreach (var subkeynamelist in installFolderKey.GetSubKeyNames())
+                    foreach (var subkeynamelist in installFolderK.GetSubKeyNames())
                     {
                         try
                         {
-                            using (RegistryKey key = installFolderKey.OpenSubKey(subkeynamelist))
+                            using (RegistryKey key = installFolderK.OpenSubKey(subkeynamelist))
                             {
                                 
                                 foreach (var subkeynamelist2 in key.GetSubKeyNames())
@@ -172,11 +177,11 @@ namespace WindowsFormsApplication2
             }
 
 
-                    foreach (var subkeynamelist in installFolderKey.GetSubKeyNames())
+                    foreach (var subkeynamelist in installFolderK.GetSubKeyNames())
                     {
                         try
                         {
-                            using (RegistryKey key = installFolderKey.OpenSubKey(subkeynamelist))
+                            using (RegistryKey key = installFolderK.OpenSubKey(subkeynamelist))
                             {
                                 
                                 foreach (var subkeynamelist2 in key.GetSubKeyNames())
@@ -275,6 +280,13 @@ namespace WindowsFormsApplication2
             newDiagRes.diagRes(pictureBox5);
 
         }
+                   
+                    /////////////////////////////
+                }
+                );
+                //////////////////////Get component information///////////////////////   
+            
+                
         
         
         private void button2_Click(object sender, EventArgs e)
@@ -291,19 +303,19 @@ namespace WindowsFormsApplication2
         {
              
             {
-                RegistryKey installFolderKey = Registry.LocalMachine;
-                installFolderKey = installFolderKey.OpenSubKey(@"SOFTWARE\", true);
+                RegistryKey installFolderK = Registry.LocalMachine;
+                installFolderK = installFolderK.OpenSubKey(@"SOFTWARE\", true);
                 string componentInfo = "ComponentInfo.txt";
                 StreamWriter createFile = File.CreateText(sendToSupportGeneric + "\\" + componentInfo);
                 createFile.Close();
                 {
 
 
-                    foreach (var subkeynamelist in installFolderKey.GetSubKeyNames())
+                    foreach (var subkeynamelist in installFolderK.GetSubKeyNames())
                     {
                         try
                         {
-                            using (RegistryKey key = installFolderKey.OpenSubKey(subkeynamelist))
+                            using (RegistryKey key = installFolderK.OpenSubKey(subkeynamelist))
                             {
                                 
                                 foreach (var subkeynamelist2 in key.GetSubKeyNames())

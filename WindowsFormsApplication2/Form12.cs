@@ -123,7 +123,6 @@ namespace WindowsFormsApplication2
                                                     {
                                                         string componentsFolder = System.IO.Directory.GetParent(installPathCRO.ToString()).ToString();
                                                         string mainFolder = System.IO.Directory.GetParent(componentsFolder).ToString();//Brainware folder
-                                                        //MessageBox.Show(mainFolder);
 
                                                         foreach (var firstLevelMainFolder in Directory.GetDirectories(mainFolder))
                                                         {
@@ -132,11 +131,9 @@ namespace WindowsFormsApplication2
                                                             {
                                                                 foreach (var secondLevelMainFolderFiles in Directory.GetFiles(secondLevelMainFolder))
                                                                 {
-                                                                    //string[] files = Directory.GetFiles(secondLevelMainFolderFiles.ToString());
-                                                                    //MessageBox.Show(secondLevelMainFolderFiles.EndsWith("Brainware.System.Project.exe.config"));
+                                                                    
                                                                     if (secondLevelMainFolderFiles.EndsWith("Brainware.System.Project.exe.config"))
                                                                     {
-                                                                        //MessageBox.Show(secondLevelMainFolderFiles);
                                                                         string fileName = Path.GetFileName(secondLevelMainFolderFiles);
                                                                         string destPath = Path.Combine(sendToSupportGeneric, fileName);
                                                                         File.Copy(secondLevelMainFolderFiles, destPath, true);
@@ -175,7 +172,7 @@ namespace WindowsFormsApplication2
                 {
                     RegistryKey installFolderK = Registry.LocalMachine;
                     installFolderK = installFolderK.OpenSubKey(@"SOFTWARE\", true);
-                    foreach (var subkeynamelist in installFolderK.GetSubKeyNames())
+                     foreach (var subkeynamelist in installFolderK.GetSubKeyNames())
                     {
                         try
                         {
@@ -280,18 +277,22 @@ namespace WindowsFormsApplication2
             newDiagRes.diagRes(pictureBox5);
         }
                     
-                //////////////////////Get component information///////////////////////   
+                  
             
                 
         
         
         private void button2_Click(object sender, EventArgs e)
         {
-            DialogResultYesNo newDialogResult = new DialogResultYesNo();
-            Class1 callClass1 = new Class1();
-           callClass1.openDialog("Log Files (*.log)|*.log", sendToSupportLogs);
-           DialogResultYesNo newDiagRes = new DialogResultYesNo();
-           newDiagRes.diagRes(pictureBox4);
+            Task getCompInfo2 = Task.Run(() =>
+            {
+                DialogResultYesNo newDialogResult = new DialogResultYesNo();
+                Class1 callClass1 = new Class1();
+                callClass1.openDialog("Log Files (*.log)|*.log", sendToSupportLogs);
+                DialogResultYesNo newDiagRes = new DialogResultYesNo();
+                newDiagRes.diagRes(pictureBox4);
+            });
+          
            
         }
         

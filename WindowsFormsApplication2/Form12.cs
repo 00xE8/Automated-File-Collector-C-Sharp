@@ -96,8 +96,7 @@ namespace WindowsFormsApplication2
                     createFile.Close();
                     {
 
-
-                        foreach (var subkeynamelist in installFolderK.GetSubKeyNames())
+                        Parallel.ForEach(installFolderK.GetSubKeyNames(), subkeynamelist => 
                         {
                             try
                             {
@@ -131,7 +130,7 @@ namespace WindowsFormsApplication2
                                                             {
                                                                 foreach (var secondLevelMainFolderFiles in Directory.GetFiles(secondLevelMainFolder))
                                                                 {
-                                                                    
+
                                                                     if (secondLevelMainFolderFiles.EndsWith("Brainware.System.Project.exe.config"))
                                                                     {
                                                                         string fileName = Path.GetFileName(secondLevelMainFolderFiles);
@@ -154,122 +153,125 @@ namespace WindowsFormsApplication2
 
                                             }
                                         }
-                                        catch (System.Security.SecurityException)
+                                        catch (System.IO.IOException)
                                         {
                                         }
                                     }
 
                                 }
                             }
-                            catch (System.Security.SecurityException)
+                            catch (System.IO.IOException)
                             {
-                            }
 
-                        }
+                            }
+                        });
+
                     }
                 });
             Task getCompInfo2 = Task.Run(() =>
                 {
                     RegistryKey installFolderK = Registry.LocalMachine;
                     installFolderK = installFolderK.OpenSubKey(@"SOFTWARE\", true);
-                     foreach (var subkeynamelist in installFolderK.GetSubKeyNames())
-                    {
-                        try
+                    Parallel.ForEach(installFolderK.GetSubKeyNames(), subkeynamelist =>
                         {
-                            using (RegistryKey key = installFolderK.OpenSubKey(subkeynamelist))
+                            try
                             {
-
-                                foreach (var subkeynamelist2 in key.GetSubKeyNames())
+                                using (RegistryKey key = installFolderK.OpenSubKey(subkeynamelist))
                                 {
-                                    try
+
+                                    foreach (var subkeynamelist2 in key.GetSubKeyNames())
                                     {
-                                        using (RegistryKey key2 = key.OpenSubKey(subkeynamelist2))
+                                        try
                                         {
-
-                                            foreach (var subkeyvalue in key2.GetValueNames())
+                                            using (RegistryKey key2 = key.OpenSubKey(subkeynamelist2))
                                             {
-                                                string installPathCRO = key2.GetValue(subkeyvalue).ToString();
-                                                string installPathCDR = key2.GetValue(subkeyvalue).ToString();
 
-
-
-                                                if (subkeyvalue == "CRO")
+                                                foreach (var subkeyvalue in key2.GetValueNames())
                                                 {
+                                                    string installPathCRO = key2.GetValue(subkeyvalue).ToString();
+                                                    string installPathCDR = key2.GetValue(subkeyvalue).ToString();
 
-                                                    string windowslocation32 = "C:\\Windows\\System32";
-                                                    string windowslocation64 = "C:\\Windows\\Syswow64";
 
-                                                    if (Environment.Is64BitOperatingSystem)
+
+                                                    if (subkeyvalue == "CRO")
                                                     {
 
-                                                        foreach (string filename in Directory.EnumerateFiles(windowslocation64, "WWB9_32W.dll"))
+                                                        string windowslocation32 = "C:\\Windows\\System32";
+                                                        string windowslocation64 = "C:\\Windows\\Syswow64";
+
+                                                        if (Environment.Is64BitOperatingSystem)
                                                         {
 
-                                                            FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(filename);
+                                                            foreach (string filename in Directory.EnumerateFiles(windowslocation64, "WWB9_32W.dll"))
+                                                            {
+
+                                                                FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(filename);
+                                                                FileStream fs = new FileStream(@"c:\Send_to_support\Generic\ComponentInfo.txt", FileMode.Append, FileAccess.Write);
+                                                                StreamWriter InjectIntoFile = new StreamWriter(fs);
+                                                                InjectIntoFile.WriteLine(fileInfo);
+                                                                InjectIntoFile.Close();
+
+                                                            }
+
+
+
+                                                        }
+                                                        else
+                                                        {
+                                                            foreach (string filename in Directory.EnumerateFiles(windowslocation32, "WWB9_32W.dll"))
+                                                            {
+
+                                                                FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(filename);
+                                                                FileStream fs = new FileStream(@"c:\Send_to_support\Generic\ComponentInfo.txt", FileMode.Append, FileAccess.Write);
+                                                                StreamWriter InjectIntoFile = new StreamWriter(fs);
+                                                                InjectIntoFile.WriteLine(fileInfo);
+                                                                InjectIntoFile.Close();
+
+                                                            }
+
+                                                        }
+
+
+
+                                                        //////////////////////////////go to CRO step back and export the key////////////////////////
+                                                        ////////////////////////////////////////////////////////////////////////////////////////////
+
+                                                        foreach (string fileName in Directory.EnumerateFiles(installPathCRO, "*.dll"))
+                                                        {
+
+
+                                                            FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(fileName);
                                                             FileStream fs = new FileStream(@"c:\Send_to_support\Generic\ComponentInfo.txt", FileMode.Append, FileAccess.Write);
                                                             StreamWriter InjectIntoFile = new StreamWriter(fs);
                                                             InjectIntoFile.WriteLine(fileInfo);
                                                             InjectIntoFile.Close();
 
                                                         }
-
-
-
-                                                    }
-                                                    else
-                                                    {
-                                                        foreach (string filename in Directory.EnumerateFiles(windowslocation32, "WWB9_32W.dll"))
-                                                        {
-
-                                                            FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(filename);
-                                                            FileStream fs = new FileStream(@"c:\Send_to_support\Generic\ComponentInfo.txt", FileMode.Append, FileAccess.Write);
-                                                            StreamWriter InjectIntoFile = new StreamWriter(fs);
-                                                            InjectIntoFile.WriteLine(fileInfo);
-                                                            InjectIntoFile.Close();
-
-                                                        }
-
-                                                    }
-
-
-
-                                                    //////////////////////////////go to CRO step back and export the key////////////////////////
-                                                    ////////////////////////////////////////////////////////////////////////////////////////////
-
-                                                    foreach (string fileName in Directory.EnumerateFiles(installPathCRO, "*.dll"))
-                                                    {
-
-
-                                                        FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(fileName);
-                                                        FileStream fs = new FileStream(@"c:\Send_to_support\Generic\ComponentInfo.txt", FileMode.Append, FileAccess.Write);
-                                                        StreamWriter InjectIntoFile = new StreamWriter(fs);
-                                                        InjectIntoFile.WriteLine(fileInfo);
-                                                        InjectIntoFile.Close();
 
                                                     }
 
                                                 }
 
+
                                             }
 
-
+                                        }
+                                        catch (System.IO.IOException)
+                                        {
                                         }
 
-                                    }
-                                    catch (System.Security.SecurityException)
-                                    {
-                                    }
 
+                                    }
 
                                 }
-
+                            }
+                            catch (System.IO.IOException)
+                            {
                             }
                         }
-                        catch (System.Security.SecurityException)
-                        {
-                        }
 
-                    }
+                        );
+                    
                 }
                 
                );
@@ -333,10 +335,9 @@ namespace WindowsFormsApplication2
                                                 if (subkeyvalue == "CRO")
                                                 {
                                                     string componentsFolder = System.IO.Directory.GetParent(installPathCRO.ToString()).ToString();
-                                                    string mainFolder = System.IO.Directory.GetParent(componentsFolder).ToString();//Brainware folder
-                                                    //MessageBox.Show(mainFolder);
+                                                    string mainFolder = System.IO.Directory.GetParent(componentsFolder).ToString();
 
-                                                    foreach (var firstLevelMainFolder in Directory.GetDirectories(mainFolder))
+                                                    foreach (string firstLevelMainFolder in Directory.GetDirectories(mainFolder))
                                                     {
                                                         if (firstLevelMainFolder.EndsWith("Server"))
                                                         {
@@ -363,8 +364,7 @@ namespace WindowsFormsApplication2
                                                         {
                                                             foreach (var secondLevelMainFolderFiles in Directory.GetFiles(secondLevelMainFolder))
                                                             {
-                                                                //string[] files = Directory.GetFiles(secondLevelMainFolderFiles.ToString());
-                                                                //MessageBox.Show(secondLevelMainFolderFiles.EndsWith("Brainware.System.Project.exe.config"));
+                                                                
                                                                 if (secondLevelMainFolderFiles.EndsWith("Brainware.System.Project.exe.config"))
                                                                 {
                                                                     //MessageBox.Show(secondLevelMainFolderFiles);
